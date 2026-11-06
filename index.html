@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>高知 不動産相場・査定</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="style.css?v=20261104a">
+</head>
+<body>
+<header class="noprint">
+  <h1>高知 不動産相場・査定</h1>
+  <nav class="tabs">
+    <button class="on" data-view="mapView">相場マップ</button>
+    <button data-view="appraisal">査定</button>
+    <button data-view="records">成約実績</button>
+  </nav>
+  <div class="src" id="srcNote"></div>
+</header>
+<main class="noprint">
+  <!-- 相場マップ -->
+  <section class="view on" id="mapView">
+    <div id="mapWrap">
+      <div id="map"></div>
+      <div class="ctrl">
+        <div class="seg" id="typeSeg">
+          <button data-t="L" class="on">土地 坪単価</button>
+          <button data-t="H">戸建 価格</button>
+          <button data-t="M">マンション 坪単価</button>
+        </div>
+        <div class="seg" id="periodSeg">
+          <button data-p="2" class="on">直近2年</button>
+          <button data-p="5">全期間</button>
+        </div>
+        <div class="seg" id="levelSeg">
+          <button data-l="dist" class="on">地区別</button>
+          <button data-l="city">市町村別</button>
+        </div>
+        <div class="seg" id="hzSeg">
+          <button data-h="none" class="on">ハザードなし</button>
+          <button data-h="tsunami">津波</button>
+          <button data-h="flood">洪水</button>
+          <button data-h="dosha">土砂</button>
+        </div>
+        <div class="seg"><button id="lpToggle">公示・調査地点</button></div>
+        <div class="seg" id="baseSeg">
+          <button data-b="original" class="on">見やすい地図</button>
+          <button data-b="std">標準地図</button>
+          <button data-b="photo">航空写真</button>
+        </div>
+        <input id="search" placeholder="地区名で探す（例：桟橋通）" list="distList" enterkeyhint="search">
+        <datalist id="distList"></datalist>
+      </div>
+      <div class="hint" id="mapHint">地図の好きな場所をタップすると、その場所で査定できます</div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <aside id="side"></aside>
+  </section>
+
+  <!-- 査定 -->
+  <section class="view" id="appraisal">
+    <div class="apWrap">
+      <form class="card" id="apForm" autocomplete="off">
+        <h2>物件情報を入力</h2>
+        <div class="seg kind" id="kindSeg">
+          <button type="button" data-k="house" class="on">土地・戸建</button>
+          <button type="button" data-k="mansion">マンション</button>
+        </div>
+        <label class="f">所在地（番地まで入れると精度が上がります）
+          <input name="addr" required placeholder="例：高知市桟橋通3丁目">
+        </label>
+        <input type="hidden" name="lat"><input type="hidden" name="lng"><input type="hidden" name="pickedAddr">
+        <div class="sub" id="pickedNote"></div>
+
+        <div class="only-house">
+          <fieldset><legend>土地</legend>
+            <label class="f">地域の種類
+              <select name="use">
+                <option value="住宅地">住宅地</option>
+                <option value="商業地">商業地（店舗・事務所が並ぶ地域）</option>
+              </select>
+            </label>
+            <div class="two">
+              <label class="f">土地面積（㎡）<input name="land" type="number" inputmode="decimal" step="0.01" min="1" placeholder="165"></label>
+              <label class="f">前面道路の幅（m）<input name="road" type="number" inputmode="decimal" step="0.1" min="0" placeholder="4"></label>
+            </div>
+            <label class="f">形状
+              <select name="shape">
+                <option value="0">ほぼ整形（長方形・正方形）</option>
+                <option value="-0.05">やや不整形</option>
+                <option value="-0.15">不整形</option>
+                <option value="-0.2">旗竿地（路地状敷地）</option>
+              </select>
+            </label>
+            <label class="chk"><input type="checkbox" name="corner"> 角地（2方向が道路に接する）</label>
+            <label class="chk"><input type="checkbox" name="noRebuild"> 再建築不可（接道義務を満たさない）</label>
+          </fieldset>
+          <fieldset><legend>公的な評価（任意・入れると精度が上がる）</legend>
+            <label class="f">前面道路の相続税路線価（千円/㎡）
+              <input name="rosenka" type="number" inputmode="numeric" step="1" min="1" placeholder="例：路線価図の「85D」なら 85">
+            </label>
+            <div class="sub" style="margin-top:4px"><a href="https://www.rosenka.nta.go.jp/main_r08/takamatu/koti/pref_frm.htm" target="_blank" rel="noopener">国税庁 路線価図（高知県・2026年分）を開く</a></div>
+            <label class="f">固定資産税評価額（土地・円）※路線価がない地域向け
+              <input name="kotei" type="number" inputmode="numeric" step="1" min="1" placeholder="納税通知書の土地の評価額">
+            </label>
+          </fieldset>
+          <fieldset><legend>建物（土地のみの場合は空欄）</legend>
+            <div class="two">
+              <label class="f">延床面積（㎡）<input name="floor" type="number" inputmode="decimal" step="0.01" min="0" placeholder="100"></label>
+              <label class="f">建築年（西暦）<input name="built" type="number" inputmode="numeric" min="1900" max="2030" placeholder="2005"></label>
+            </div>
+            <label class="f">構造
+              <select name="st">
+                <option value="W">木造</option>
+                <option value="LS">軽量鉄骨造</option>
+                <option value="S">鉄骨造</option>
+                <option value="RC">鉄筋コンクリート（RC・SRC）</option>
+              </select>
+            </label>
+            <label class="chk"><input type="checkbox" name="reform"> 大規模リフォーム済み（10年以内）</label>
+          </fieldset>
+        </div>
+
+        <div class="only-mansion">
+          <fieldset><legend>マンション</legend>
+            <div class="two">
+              <label class="f">専有面積（㎡）<input name="mArea" type="number" inputmode="decimal" step="0.01" min="10" placeholder="75"></label>
+              <label class="f">建築年（西暦）<input name="mBuilt" type="number" inputmode="numeric" min="1960" max="2030" placeholder="2005"></label>
+            </div>
+            <label class="f">間取り（任意）<input name="madori" placeholder="例：3LDK"></label>
+            <label class="chk"><input type="checkbox" name="mReform"> 室内リフォーム済み（10年以内）</label>
+          </fieldset>
+        </div>
+
+        <div class="formBtns">
+          <button class="btn" type="submit">査定する</button>
+          <button class="btn ghost" type="button" id="sample">入力例</button>
+        </div>
+        <div class="err" id="apErr"></div>
+      </form>
+      <div class="card result" id="apResult"><div class="empty">物件情報を入れて「査定する」を押してください。<br>相場マップで地図をタップしても始められます。</div></div>
+    </div>
+  </section>
+
+  <!-- 成約実績 -->
+  <section class="view" id="records">
+    <div class="recWrap">
+      <div class="card">
+        <h2>自社の成約実績</h2>
+        <p class="sub">査定結果の「成約実績に記録」で登録した物件に、実際の成約価格を入れてください。査定額とのずれを集計し、5件以上たまると、その結果で査定額を補正できます。</p>
+        <div id="recSummary"></div>
+        <div class="tableScroll"><table id="recTable"></table></div>
+        <div class="formBtns">
+          <button class="btn ghost" type="button" id="recExport">CSVで書き出す</button>
+          <label class="btn ghost" style="margin:0">CSVを読み込む<input type="file" id="recImport" accept=".csv,text/csv" hidden></label>
+        </div>
+        <p class="sub">記録はこの端末のブラウザに保存されます。別の端末やバックアップには、CSVで書き出して読み込んでください。</p>
+      </div>
+      <div class="card">
+        <h2>査定書の設定</h2>
+        <div class="two">
+          <label class="f">会社名<input id="cfgCompany" placeholder="例：COLOR不動産"></label>
+          <label class="f">担当者<input id="cfgStaff" placeholder="例：山﨑"></label>
+        </div>
+        <label class="f">連絡先（任意）<input id="cfgContact" placeholder="例：088-000-0000"></label>
+        <p class="sub">査定書の右上に印字されます。この端末に保存されます。</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- 印刷用の査定書（画面では非表示） -->
+<div id="report"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
+<script src="data.js?v=20261104a"></script>
+<script src="landprice.js?v=20261104a"></script>
+<script src="hazard.js?v=20261104a" onerror="window.HAZARD={}"></script>
+<script src="basemap.js?v=20261104a"></script>
+<script src="app.js?v=20261104a"></script>
+<script src="records.js?v=20261104a"></script>
+</body>
+</html>
