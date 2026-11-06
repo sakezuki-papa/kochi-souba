@@ -72,6 +72,10 @@ tr.click{cursor:pointer} tr.click:hover{background:var(--accent-weak)}
 .seg.kind{display:flex;margin-bottom:6px} .seg.kind button{flex:1;padding:9px}
 label.f{display:block;margin:10px 0 0;font-size:12px;color:var(--ink2)}
 label.f input,label.f select{display:block;width:100%;margin-top:4px;border:1px solid var(--line);border-radius:6px;padding:9px 8px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+.unitIn{display:flex;gap:4px;margin-top:4px}
+label.f .unitIn input{margin-top:0;flex:1;min-width:0}
+label.f .unitIn select{margin-top:0;width:auto;flex:none;padding:9px 4px}
+#landConv{display:block;min-height:1.2em;margin-top:2px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 .chk{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;min-height:28px}
 .chk input{width:18px;height:18px}

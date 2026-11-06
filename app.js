@@ -609,6 +609,18 @@ function setKind(k) {
 document.querySelectorAll('#kindSeg button').forEach(b => b.onclick = () => setKind(b.dataset.k));
 setKind('house');
 
+// 土地面積は㎡・坪のどちらでも入力でき、計算は㎡にそろえる
+function landM2(f) {
+  const v = f.land.value === '' ? NaN : Number(f.land.value);
+  return f.landUnit.value === 'tsubo' ? Math.round(v * TSUBO * 100) / 100 : v;
+}
+function showLandConv() {
+  const f = $('#apForm'), m2 = landM2(f);
+  $('#landConv').textContent = !(m2 > 0) ? '' : f.landUnit.value === 'tsubo' ? `＝ ${m2.toLocaleString()}㎡` : `＝ ${(m2 / TSUBO).toFixed(1)}坪`;
+}
+$('#apForm').land.addEventListener('input', showLandConv);
+$('#apForm').landUnit.addEventListener('change', showLandConv);
+
 $('#apForm').addEventListener('submit', async e => {
   e.preventDefault();
   const f = e.target, num = v => v === '' ? NaN : Number(v);
@@ -616,7 +628,7 @@ $('#apForm').addEventListener('submit', async e => {
   const input = kind === 'mansion'
     ? { addr: f.addr.value.trim(), area: num(f.mArea.value), built: num(f.mBuilt.value), madori: f.madori.value.trim(), reform: f.mReform.checked }
     : {
-      addr: f.addr.value.trim(), use: f.use.value, land: num(f.land.value),
+      addr: f.addr.value.trim(), use: f.use.value, land: landM2(f),
       rosenka: num(f.rosenka.value), kotei: num(f.kotei.value), road: num(f.road.value), shape: Number(f.shape.value),
       corner: f.corner.checked, noRebuild: f.noRebuild.checked,
       floor: num(f.floor.value), built: num(f.built.value), st: f.st.value, reform: f.reform.checked,
@@ -642,7 +654,7 @@ $('#sample').onclick = () => {
   const f = $('#apForm');
   f.lat.value = ''; f.pickedAddr.value = ''; $('#pickedNote').textContent = '';
   if (f.dataset.kind === 'mansion') { f.addr.value = '高知市本町'; f.mArea.value = 75; f.mBuilt.value = 2008; f.madori.value = '3LDK'; }
-  else { f.addr.value = '高知市朝倉丙'; f.land.value = 165; f.road.value = 4; f.floor.value = 105; f.built.value = 2008; f.st.value = 'W'; }
+  else { f.addr.value = '高知市朝倉丙'; f.land.value = 165; f.landUnit.value = 'm2'; f.road.value = 4; f.floor.value = 105; f.built.value = 2008; f.st.value = 'W'; showLandConv(); }
 };
 
 // ---------- 地図：公示・調査地点の表示 ----------

@@ -7,7 +7,7 @@
 <title>高知 不動産相場・査定</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=20261104a">
+<link rel="stylesheet" href="style.css?v=20261106a">
 </head>
 <body>
 <header class="noprint">
@@ -83,7 +83,10 @@
               </select>
             </label>
             <div class="two">
-              <label class="f">土地面積（㎡）<input name="land" type="number" inputmode="decimal" step="0.01" min="1" placeholder="165"></label>
+              <label class="f">土地面積
+                <span class="unitIn"><input name="land" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="165"><select name="landUnit" aria-label="単位"><option value="m2">㎡</option><option value="tsubo">坪</option></select></span>
+                <span class="sub" id="landConv"></span>
+              </label>
               <label class="f">前面道路の幅（m）<input name="road" type="number" inputmode="decimal" step="0.1" min="0" placeholder="4"></label>
             </div>
             <label class="f">形状
@@ -177,11 +180,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
-<script src="data.js?v=20261104a"></script>
-<script src="landprice.js?v=20261104a"></script>
-<script src="hazard.js?v=20261104a" onerror="window.HAZARD={}"></script>
-<script src="basemap.js?v=20261104a"></script>
-<script src="app.js?v=20261104a"></script>
-<script src="records.js?v=20261104a"></script>
+<script src="data.js?v=20261106a"></script>
+<script src="landprice.js?v=20261106a"></script>
+<script src="hazard.js?v=20261106a" onerror="window.HAZARD={}"></script>
+<script src="basemap.js?v=20261106a"></script>
+<script src="app.js?v=20261106a"></script>
+<script src="records.js?v=20261106a"></script>
 </body>
 </html>
